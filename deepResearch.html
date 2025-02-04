@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>赛力斯深度研报 - 星海证券研究</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <!-- 引入可视化库 -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
     <style>
@@ -111,11 +113,23 @@
         }
 
         /* Ensuring charts are responsive */
-        @media (max-width: 768px) {
-            .financial-chart {
-                min-height: 300px;
-            }
-        }
+        @media (min-width: 950px) {
+  #analysis {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* exactly 2 columns */
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 950px) {
+  #analysis {
+    display: block; /* single column for narrower screens */
+  }
+}
+    
+    .chart-container {
+        height: 350px;
+    }
          /* 新增可视化卡片样式 */
          .visual-card {
             background: white;
@@ -140,7 +154,7 @@
 
 <body>
     <header class="report-header">
-        <h1>赛力斯（300750）深度研究报告</h1>
+        <h1>赛力斯（601172）深度研究报告</h1>
         <p class="subtitle">2024年第三季度财务数据分析及行业前景</p>
         <div class="report-meta">
             <span>发布日期：2024-02-03</span>
@@ -149,6 +163,20 @@
 
     <nav class="nav-tabs">
         <!-- 动态生成目录导航 -->
+        <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1001;">
+            <button onclick="exportPDF()" style="
+                background: #4a90e2;
+                color: white;
+                padding: 12px 24px;
+                border: none;
+                border-radius: 25px;
+                cursor: pointer;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                transition: all 0.3s;
+            ">
+                ⬇️ 导出PDF报告
+            </button>
+        </div>
     </nav>
 
     <!-- 核心观点替换为赛力斯2024年第三季度扣非净利润内容 -->
@@ -166,9 +194,8 @@
 
     <section class="section-card" id="analysis">
         <h2>指标分析</h2>
-        
         <!-- 收入端分析 -->
-        <div class="visual-card">
+        <p><div class="visual-card">
             <div class="chart-container" id="revenueChart"></div>
             <div class="analysis-text">
                 <h3>1. 收入端：产品结构升级驱动量价齐升</h3>
@@ -177,7 +204,7 @@
                 href="https://stock.stockstar.com/report/data_fn_issvwqsqyysvqxqyptrpr.html" target="_blank">来源</a>
             </div>
         </div>
-
+    
         <!-- 成本端分析 -->
         <div class="visual-card">
             <div class="chart-container" id="costChart"></div>
@@ -188,7 +215,7 @@
                 href="http://ai.iwencai.com/searchapp/content.html#type=report_pdf&uid=c65ff5d29b638ed0" target="_blank">来源</a>
             </div>
         </div>
-
+    
         <!-- 费用端分析 -->
         <div class="visual-card">
             <div class="chart-container" id="expenseChart"></div>
@@ -200,7 +227,7 @@
                 href="http://ai.iwencai.com/searchapp/content.html#type=report_pdf&uid=c65ff5d29b638ed0" target="_blank">来源</a>
             </div>
         </div>
-
+    
         <!-- 资产质量分析 -->
         <div class="visual-card">
             <div class="chart-container" id="assetChart"></div>
@@ -211,7 +238,9 @@
                 <p>风险提示：<span class="highlight">固定资产周转率0.83次</span>，仍低于行业平均1.2次</p>
             </div>
         </div>
+    </p>
     </section>
+    
 
     <section class="section-card" id="industry">
         <h2>行业竞争格局</h2>
@@ -253,25 +282,72 @@
     </section>
 
     <script>
-        // 移除了收入趋势图的相关代码
-// 收入结构分析
-const revenueChart = echarts.init(document.getElementById('revenueChart'));
-        revenueChart.setOption({
-            title: { text: '车型销售结构变化（2021-2024）', left: 'center' },
-            tooltip: { trigger: 'item' },
-            legend: { top: 'bottom' },
-            series: [{
-                type: 'pie',
-                radius: ['35%', '65%'],
-                data: [
-                    { value: 18, name: '20万以下' },
-                    { value: 49, name: '20-30万' },
-                    { value: 22, name: '30-40万' },
-                    { value: 11, name: '40万以上' }
-                ],
-                emphasis: { itemStyle: { shadowBlur: 10 } }
-            }]
-        });
+        // 车型销售结构变化堆积柱图
+    const revenueChart = echarts.init(document.getElementById('revenueChart'));
+    revenueChart.setOption({
+        title: {
+            text: '车型销售结构变化（2021-2024）',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        legend: {
+            data: ['20万以下', '20-30万', '30-40万', '40万以上'],
+            top: 'bottom'
+        },
+        xAxis: {
+            type: 'category',
+            data: ['2021', '2022', '2023', '2024'],
+            axisLabel: {
+                interval: 0
+            }
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                name: '20万以下',
+                type: 'bar',
+                stack: '总量',
+                data: [40, 35, 30, 25],
+                itemStyle: {
+                    color: '#4a90e2'
+                }
+            },
+            {
+                name: '20-30万',
+                type: 'bar',
+                stack: '总量',
+                data: [45, 42, 38, 35],
+                itemStyle: {
+                    color: '#ff6b6b'
+                }
+            },
+            {
+                name: '30-40万',
+                type: 'bar',
+                stack: '总量',
+                data: [10, 15, 20, 25],
+                itemStyle: {
+                    color: '#ffcc00'
+                }
+            },
+            {
+                name: '40万以上',
+                type: 'bar',
+                stack: '总量',
+                data: [5, 8, 12, 15],
+                itemStyle: {
+                    color: '#7ed321'
+                }
+            }
+        ]
+    });
 
         // 成本优化分析
         const costChart = echarts.init(document.getElementById('costChart'));
@@ -378,6 +454,125 @@ const revenueChart = echarts.init(document.getElementById('revenueChart'));
             });
         }
         generateTOC();
+        document.addEventListener('DOMContentLoaded', function() {
+    // 初始化图表...
+    
+    // 窗口resize监听
+    window.addEventListener('resize', () => {
+        [revenueChart, costChart, expenseChart, assetChart, marketChart].forEach(chart => {
+            chart.resize();
+        });
+    });
+});
+// PDF导出功能
+async function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    
+    // 显示加载提示
+    const loading = document.createElement('div');
+    loading.style = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 8px;
+        z-index: 9999;
+    `;
+    loading.innerHTML = '正在生成PDF，请稍候...';
+    document.body.appendChild(loading);
+
+    try {
+        // 处理所有图表
+        const charts = [
+            revenueChart, costChart, 
+            expenseChart, assetChart, 
+            marketChart
+        ];
+        
+        // 等待所有图表渲染完成
+        await Promise.all(charts.map(chart => {
+            chart.resize(); // 确保图表尺寸正确
+            return new Promise(resolve => setTimeout(resolve, 500));
+        }));
+
+        // 转换整个页面
+        const canvas = await html2canvas(document.body, {
+            useCORS: true,
+            scale: 2, // 提高分辨率
+            logging: true,
+            allowTaint: true,
+            onclone: (clonedDoc) => {
+                // 打印时优化样式
+                clonedDoc.querySelector('.nav-tabs').style.display = 'none';
+                clonedDoc.querySelectorAll('button').forEach(btn => btn.style.display = 'none');
+            }
+        });
+
+        // 计算图片尺寸
+        const imgWidth = pageWidth - 20; // 左右留白
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // 分页处理
+        let position = 10;
+        let remainingHeight = imgHeight;
+        
+        while (remainingHeight > 0) {
+            const sectionHeight = remainingHeight > 280 ? 280 : remainingHeight;
+            const sectionCanvas = await html2canvas(document.body, {
+                y: position,
+                height: sectionHeight,
+                useCORS: true,
+                scale: 2
+            });
+
+            pdf.addImage(
+                sectionCanvas.toDataURL('image/png', 1.0),
+                'PNG',
+                10,
+                10,
+                imgWidth,
+                sectionHeight * imgWidth / canvas.width
+            );
+
+            remainingHeight -= sectionHeight;
+            position += sectionHeight;
+            
+            if (remainingHeight > 0) {
+                pdf.addPage();
+            }
+        }
+
+        // 保存文件
+        pdf.save('赛力斯研究报告.pdf');
+    } catch (error) {
+        console.error('导出失败:', error);
+        alert('导出失败，请重试');
+    } finally {
+        loading.remove();
+    }
+}
+
+// 添加打印样式
+const style = document.createElement('style');
+style.innerHTML = `
+    @media print {
+        .nav-tabs, button {
+            display: none !important;
+        }
+        .section-card {
+            page-break-inside: avoid;
+        }
+        .financial-chart {
+            max-height: 600px !important;
+        }
+    }
+`;
+document.head.appendChild(style);
     </script>
 </body>
 
